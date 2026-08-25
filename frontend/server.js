@@ -1,6 +1,5 @@
 const express = require("express");
 const axios = require("axios");
-const path = require("path");
 const fs = require("fs");
 
 const app = express();
@@ -15,33 +14,36 @@ app.get("/health", (req, res) => {
 
 // when user submits the form
 app.post("/submit", async (req, res) => {
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:9000";
+
     try {
-        // calling backend
-        const backendUrl = process.env.BACKEND_URL || "http://localhost:9000";
-        const response = await axios.post(`${backendUrl}/process`, req.body);
+        const response = await axios.post(
+            backendUrl + "/process",
+            req.body
+        );
 
         if (response.data.success) {
             return res.redirect("/success.html");
-        } else {
-            throw new Error(response.data.message || "Failed");
         }
 
     } catch (err) {
-        let msg = "Something went wrong";
+        let message = "Something went wrong";
 
-        if (err.code === "ECONNREFUSED") {
-            msg = "Backend is not running";
-        } else if (err.response && err.response.data && err.response.data.message) {
-            msg = err.response.data.message;
-        } else if (err.message) {
-            msg = err.message;
+        if (err.response) {
+            message = err.response.data.message;
         }
 
-        // load the form page again and show error
-        let page = fs.readFileSync(path.join(__dirname, "public", "index.html"), "utf8");
-        page = page.replace("<!-- ERROR_MESSAGE -->", `<div class="error-alert">${msg}</div>`);
+        let page = fs.readFileSync("public/index.html", "utf8");
 
-        return res.status(500).send(page);
+        page = page.replace(
+            "<!-- ERROR_MESSAGE -->",
+            `<div class="error-alert">${message}</div>
+            <script>
+                history.replaceState(null, "", "/");
+            </script>`
+        );
+
+        return res.send(page);
     }
 });
 
