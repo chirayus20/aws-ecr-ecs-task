@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Backend ECS Service running on AWS Fargate (Port 9000)
+
+Resources:
+  BackendService:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: express-backend-service
+      Cluster: !ImportValue ecs-cluster-name
+      TaskDefinition: !ImportValue backend-task-definition-arn
+      DesiredCount: 1
+      LaunchType: FARGATE
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 50
+        MaximumPercent: 200
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !ImportValue ecs-public-subnet-1
+            - !ImportValue ecs-public-subnet-2
+          SecurityGroups:
+            - !ImportValue flask-backend-sg-id
+
+Outputs:
+  BackendServiceName:
+    Description: Backend ECS Service Name
+    Value: !Ref BackendService

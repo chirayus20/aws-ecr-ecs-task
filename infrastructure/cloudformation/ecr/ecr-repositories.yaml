@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template for ECR Repositories (express-backend and express-frontend)
+
+Resources:
+  BackendECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: express-backend
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: MUTABLE
+
+  FrontendECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: express-frontend
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: MUTABLE
+
+Outputs:
+  BackendRepositoryUri:
+    Description: ECR Repository URI for Flask Backend
+    Value: !GetAtt BackendECRRepository.RepositoryUri
+    Export:
+      Name: express-backend-repo-uri
+
+  FrontendRepositoryUri:
+    Description: ECR Repository URI for Express Frontend
+    Value: !GetAtt FrontendECRRepository.RepositoryUri
+    Export:
+      Name: express-frontend-repo-uri
