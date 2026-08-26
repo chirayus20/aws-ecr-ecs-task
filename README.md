@@ -63,6 +63,6 @@ aws-ecr-ecs-task/
 
 ## Live Application Endpoints
 
-* **Frontend Application:** [http://52.66.240.170:8000](http://52.66.240.170:8000)
-* **Backend API:** [http://15.206.209.45:9000](http://15.206.209.45:9000)
-* **Backend Health Check:** [http://15.206.209.45:9000/health](http://15.206.209.45:9000/health)
+* **Frontend Application:** [http://52.66.240.170:8000]
+* **Backend API:** [http://15.206.209.45:9000]
+* **Backend Health Check:** [http://15.206.209.45:9000/health]
