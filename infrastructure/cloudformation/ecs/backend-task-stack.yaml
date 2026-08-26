@@ -4,7 +4,7 @@ Description: Backend Task Definition for Flask app running on port 9000
 Parameters:
   ImageUri:
     Type: String
-    Description: ECR Image URI for Flask Backend (express-backend)
+    Description: ECR Image URI for Flask Backend (flask-backend)
 
   DBUser:
     Type: String
@@ -25,34 +25,23 @@ Parameters:
     Description: MongoDB database name
     Default: user_db
 
-Resources:
-  BackendTaskExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - ecs-tasks.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+  ExecutionRoleArn:
+    Type: String
+    Description: Existing ECS task execution role ARN
 
+Resources:
   BackendTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: express-backend-task
+      Family: flask-backend-task
       RequiresCompatibilities:
         - FARGATE
       NetworkMode: awsvpc
       Cpu: "256"
       Memory: "512"
-      ExecutionRoleArn: !GetAtt BackendTaskExecutionRole.Arn
+      ExecutionRoleArn: !Ref ExecutionRoleArn
       ContainerDefinitions:
-        - Name: express-backend
+        - Name: flask-backend
           Image: !Ref ImageUri
           Essential: true
           PortMappings:
@@ -72,7 +61,7 @@ Resources:
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: /ecs/express-backend
+              awslogs-group: /ecs/flask-backend-task
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: backend
           HealthCheck:

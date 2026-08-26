@@ -1,28 +1,12 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: ECS Cluster setup with AWS Fargate capacity provider and CloudWatch log groups.
+
+Description: ECS Cluster for Flask backend and Express frontend
 
 Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: express-app-cluster
-      CapacityProviders:
-        - FARGATE
-      DefaultCapacityProviderStrategy:
-        - CapacityProvider: FARGATE
-          Weight: 1
-
-  BackendLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/express-backend
-      RetentionInDays: 7
-
-  FrontendLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/express-frontend
-      RetentionInDays: 7
+      ClusterName: flask-express-cluster
 
 Outputs:
   ClusterName:
@@ -30,9 +14,3 @@ Outputs:
     Value: !Ref ECSCluster
     Export:
       Name: ecs-cluster-name
-
-  ClusterArn:
-    Description: ECS Cluster ARN
-    Value: !GetAtt ECSCluster.Arn
-    Export:
-      Name: ecs-cluster-arn

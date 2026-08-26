@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
-import hashlib
+from werkzeug.security import generate_password_hash
 import logging
 
 load_dotenv()
@@ -54,7 +54,7 @@ def process():
             return jsonify({"success": False, "message": "Password too short"}), 400
 
         # hash the password
-        hashed = hashlib.sha256(password.encode()).hexdigest()
+        hashed = generate_password_hash(password)
 
         collection.insert_one({
             "name": name,

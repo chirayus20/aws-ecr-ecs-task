@@ -1,8 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: End-to-end VPC Infrastructure with 2 Public Subnets, Internet Gateway, Route Tables, and Security Groups for ECS Fargate.
+Description: VPC setup for Flask backend and Express frontend on ECS Fargate
 
 Resources:
-  # 1. VPC Definition
   VPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -13,21 +12,15 @@ Resources:
         - Key: Name
           Value: ecs-fargate-vpc
 
-  # 2. Internet Gateway & Attachment
   InternetGateway:
     Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-        - Key: Name
-          Value: ecs-fargate-igw
 
-  VPCGatewayAttachment:
+  AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
 
-  # 3. Public Subnets across 2 Availability Zones
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -37,7 +30,7 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: ecs-public-subnet-1
+          Value: flask-express-PublicSubnet1
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -48,50 +41,42 @@ Resources:
       MapPublicIpOnLaunch: true
       Tags:
         - Key: Name
-          Value: ecs-public-subnet-2
+          Value: flask-express-PublicSubnet2
 
-  # 4. Route Table and Public Route
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: ecs-public-route-table
 
   PublicRoute:
     Type: AWS::EC2::Route
-    DependsOn: VPCGatewayAttachment
+    DependsOn: AttachGateway
     Properties:
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
 
-  PublicSubnet1RouteTableAssociation:
+  Subnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref PublicSubnet1
       RouteTableId: !Ref PublicRouteTable
 
-  PublicSubnet2RouteTableAssociation:
+  Subnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref PublicRouteTable
 
-  # 5. Security Groups
   BackendSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Flask Backend Security Group (Port 9000)
+      GroupDescription: Allow traffic to Flask backend on port 9000
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 9000
           ToPort: 9000
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: -1
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
@@ -100,15 +85,12 @@ Resources:
   FrontendSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Express Frontend Security Group (Port 8000)
+      GroupDescription: Allow traffic to Express frontend on port 8000
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 8000
           ToPort: 8000
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: -1
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
@@ -119,28 +101,28 @@ Outputs:
     Description: VPC ID
     Value: !Ref VPC
     Export:
-      Name: ecs-vpc-id
+      Name: flask-express-VpcId
 
   PublicSubnet1:
     Description: Public Subnet 1 ID
     Value: !Ref PublicSubnet1
     Export:
-      Name: ecs-public-subnet-1
+      Name: flask-express-PublicSubnet1
 
   PublicSubnet2:
     Description: Public Subnet 2 ID
     Value: !Ref PublicSubnet2
     Export:
-      Name: ecs-public-subnet-2
+      Name: flask-express-PublicSubnet2
 
   BackendSecurityGroupId:
     Description: Backend Security Group ID
     Value: !Ref BackendSecurityGroup
     Export:
-      Name: flask-backend-sg-id
+      Name: flask-express-BackendSG
 
   FrontendSecurityGroupId:
     Description: Frontend Security Group ID
     Value: !Ref FrontendSecurityGroup
     Export:
-      Name: express-frontend-sg-id
+      Name: flask-express-FrontendSG
