@@ -9,7 +9,6 @@ This project contains a containerized **Flask backend** and an **Express fronten
 ```text
 aws-ecr-ecs-task/
 │
-├── assessment-docs/          # Assessment documentation
 ├── backend/                  # Flask Backend Application
 │   ├── myenv/                # Python virtual environment
 │   ├── app.py                # Main Flask application file
