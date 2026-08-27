@@ -43,6 +43,9 @@ def process():
         name = data.get("name")
         password = data.get("password")
 
+        name = name.strip() if name else ""
+        password = password.strip() if password else ""
+
         # check if name and password is given
         if not name or not password:
             return jsonify({"success": False, "message": "Name and password required"}), 400
