@@ -41,28 +41,38 @@ aws-ecr-ecs-task/
 └── README.md                 # Project documentation
 ## Architecture Deployment Steps
 
-1. **Create ECR Repositories** *(CloudFormation: `ecr-repositories.yaml`)*
-2. **Build Docker Images Locally**
-   * **Backend:** Flask (Runs on port `9000`)
-   * **Frontend:** Express (Runs on port `8000`)
-3. **Push Docker Images** to Amazon ECR repositories
-4. **Create VPC & Networking** *(CloudFormation: `vpc.yaml`)*
-   * Custom VPC with 2 Public Subnets
-   * Internet Gateway & Route Tables
-   * Security Groups: Backend SG (Port `9000`) & Frontend SG (Port `8000`)
-5. **Create ECS Cluster** *(CloudFormation: `cluster.yaml`)*
-   * Setup AWS ECS Fargate Cluster
-6. **Create Task Definitions**
-   * Backend Task (`backend-task-stack.yaml`)
-   * Frontend Task (`frontend-task-stack.yaml` - includes environment variables, logging, and health checks)
-7. **Create ECS Services**
-   * Backend Service (`backend-service-stack.yaml`)
-   * Frontend Service (`frontend-service-stack.yaml`)
+
+1. Create ECR Repositories  
+   (CloudFormation: `ecr-repositories.yaml`)
+
+2. Build Docker Images Locally  
+   - Backend: Flask (Runs on port 9000)  
+   - Frontend: Express (Runs on port 8000)
+
+3. Push Docker Images to Amazon ECR repositories
+
+4. Create VPC & Networking  
+   (CloudFormation: `vpc.yaml`)  
+   - Custom VPC with 2 Public Subnets  
+   - Internet Gateway & Route Tables  
+   - Security Groups: Backend SG (Port 9000) & Frontend SG (Port 8000)
+
+5. Create ECS Cluster  
+   (CloudFormation: `cluster.yaml`)  
+   - Setup AWS ECS Fargate Cluster
+
+6. Create Task Definitions  
+   - Backend Task (`backend-task-stack.yaml`)  
+   - Frontend Task (`frontend-task-stack.yaml` – includes environment variables, logging, and health checks)
+
+7. Create ECS Services  
+   - Backend Service (`backend-service-stack.yaml`)  
+   - Frontend Service (`frontend-service-stack.yaml`)
 
 ---
 
-## Live Application Endpoints
+**Live Application Endpoints**
 
-* **Frontend Application:** [http://52.66.240.170:8000]
-* **Backend API:** [http://15.206.209.45:9000]
-* **Backend Health Check:** [http://15.206.209.45:9000/health]
+- Frontend Application: http://52.66.240.170:8000  
+- Backend API: http://15.206.209.45:9000  
+- Backend Health Check: http://15.206.209.45:9000/health
