@@ -2,6 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: VPC setup for Flask backend and Express frontend on ECS Fargate
 
 Resources:
+  # Create VPC for ECS Fargate resources
   VPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -12,6 +13,7 @@ Resources:
         - Key: Name
           Value: ecs-fargate-vpc
 
+  # Attach Internet Gateway to the VPC
   InternetGateway:
     Type: AWS::EC2::InternetGateway
 
@@ -21,6 +23,7 @@ Resources:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
 
+  # Create first public subnet
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -32,6 +35,7 @@ Resources:
         - Key: Name
           Value: flask-express-PublicSubnet1
 
+  # Create second public subnet
   PublicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
@@ -43,6 +47,7 @@ Resources:
         - Key: Name
           Value: flask-express-PublicSubnet2
 
+  # Create public route table for internet access
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -68,6 +73,7 @@ Resources:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref PublicRouteTable
 
+  # Backend Security Group
   BackendSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -82,6 +88,7 @@ Resources:
         - Key: Name
           Value: flask-backend-sg
 
+  # Frontend Security Group
   FrontendSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:

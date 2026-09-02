@@ -10,9 +10,6 @@ Resources:
       TaskDefinition: !ImportValue backend-task-definition-arn
       DesiredCount: 1
       LaunchType: FARGATE
-      DeploymentConfiguration:
-        MinimumHealthyPercent: 50
-        MaximumPercent: 200
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: ENABLED

@@ -6,16 +6,6 @@ Parameters:
     Type: String
     Description: ECR Image URI for Flask Backend (flask-backend)
 
-  DBUser:
-    Type: String
-    Description: MongoDB username
-    NoEcho: true
-
-  DBPassword:
-    Type: String
-    Description: MongoDB password
-    NoEcho: true
-
   DBCluster:
     Type: String
     Description: MongoDB cluster URL (e.g. cluster0.xxxx.mongodb.net)
@@ -25,11 +15,34 @@ Parameters:
     Description: MongoDB database name
     Default: user_db
 
-  ExecutionRoleArn:
-    Type: String
-    Description: Existing ECS task execution role ARN
-
 Resources:
+  # This role allows ECS task to pull image, send logs, and read secrets
+  BackendExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: BackendSecretAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - "arn:aws:secretsmanager:ap-south-1:602167898067:secret:flask-backend-db-secret-O6s5Ao"
+
+  # This log group stores backend container logs
   BackendTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -39,7 +52,7 @@ Resources:
       NetworkMode: awsvpc
       Cpu: "256"
       Memory: "512"
-      ExecutionRoleArn: !Ref ExecutionRoleArn
+      ExecutionRoleArn: !GetAtt BackendExecutionRole.Arn
       ContainerDefinitions:
         - Name: flask-backend
           Image: !Ref ImageUri
@@ -50,10 +63,6 @@ Resources:
           Environment:
             - Name: PORT
               Value: "9000"
-            - Name: DB_USER
-              Value: !Ref DBUser
-            - Name: DB_PASSWORD
-              Value: !Ref DBPassword
             - Name: DB_CLUSTER
               Value: !Ref DBCluster
             - Name: DB_NAME
@@ -72,6 +81,14 @@ Resources:
             Timeout: 5
             Retries: 3
             StartPeriod: 60
+
+          # Get database credentials from AWS Secrets Manager
+          Secrets:
+            - Name: DB_USER
+              ValueFrom: "arn:aws:secretsmanager:ap-south-1:602167898067:secret:flask-backend-db-secret-O6s5Ao:DB_USER::"
+
+            - Name: DB_PASSWORD
+              ValueFrom: "arn:aws:secretsmanager:ap-south-1:602167898067:secret:flask-backend-db-secret-O6s5Ao:DB_PASSWORD::"
 
 Outputs:
   BackendTaskDefinitionArn:

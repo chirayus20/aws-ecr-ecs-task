@@ -10,11 +10,24 @@ Parameters:
     Type: String
     Description: Backend service URL (e.g. http://BACKEND-PUBLIC-IP:9000)
 
-  ExecutionRoleArn:
-    Type: String
-    Description: Existing ECS task execution role ARN
-
 Resources:
+  # This role allows ECS task to pull image and send logs
+  FrontendExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+
+  # This log group stores frontend container logs
   FrontendTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
@@ -24,7 +37,7 @@ Resources:
       NetworkMode: awsvpc
       Cpu: "256"
       Memory: "512"
-      ExecutionRoleArn: !Ref ExecutionRoleArn
+      ExecutionRoleArn: !GetAtt FrontendExecutionRole.Arn
       ContainerDefinitions:
         - Name: express-frontend
           Image: !Ref ImageUri
@@ -46,7 +59,7 @@ Resources:
           HealthCheck:
             Command:
               - CMD-SHELL
-              - curl -f http://localhost:8000/health || exit 1
+              - curl -f http://localhost:8000/ || exit 1
             Interval: 30
             Timeout: 5
             Retries: 3

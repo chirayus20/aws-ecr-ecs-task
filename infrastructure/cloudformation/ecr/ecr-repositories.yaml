@@ -2,6 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: CloudFormation template for ECR Repositories (express-backend and express-frontend)
 
 Resources:
+  # Create ECR Repository for Flask Backend
   BackendECRRepository:
     Type: AWS::ECR::Repository
     Properties:
@@ -10,6 +11,7 @@ Resources:
         ScanOnPush: true
       ImageTagMutability: MUTABLE
 
+  # Create ECR Repository for Express Frontend
   FrontendECRRepository:
     Type: AWS::ECR::Repository
     Properties:
