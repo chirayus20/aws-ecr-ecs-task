@@ -22,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       # Get project code from GitHub
       - name: Checkout code
         uses: actions/checkout@v4
@@ -39,7 +38,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-
       # Build and push backend Docker image
       - name: Build and push backend image
         id: build-backend
@@ -50,7 +48,6 @@ jobs:
           docker build -t $ECR_REGISTRY/$BACKEND_REPOSITORY:$IMAGE_TAG ./backend
           docker push $ECR_REGISTRY/$BACKEND_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$BACKEND_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
 
       # Get current backend task definition
       - name: Download backend task definition
@@ -78,7 +75,6 @@ jobs:
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
 
-
       # Build and push frontend Docker image
       - name: Build and push frontend image
         id: build-frontend
@@ -89,7 +85,6 @@ jobs:
           docker build -t $ECR_REGISTRY/$FRONTEND_REPOSITORY:$IMAGE_TAG ./frontend
           docker push $ECR_REGISTRY/$FRONTEND_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$FRONTEND_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-
 
       # Get current frontend task definition
       - name: Download frontend task definition
