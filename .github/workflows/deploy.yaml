@@ -9,12 +9,21 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  AWS_REGION: ap-south-1
+  ECS_CLUSTER: flask-express-cluster
+  BACKEND_REPOSITORY: express-backend
+  FRONTEND_REPOSITORY: express-frontend
+  BACKEND_SERVICE: flask-backend
+  FRONTEND_SERVICE: express-frontend
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Get project code
+
+      # Get project code from GitHub
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -23,38 +32,87 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ap-south-1
+          aws-region: ${{ env.AWS_REGION }}
 
-      # Login to Amazon ECR
+      # Login Docker to Amazon ECR
       - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
+
 
       # Build and push backend Docker image
       - name: Build and push backend image
+        id: build-backend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t express-backend ./backend
-          docker tag express-backend:latest 602167898067.dkr.ecr.ap-south-1.amazonaws.com/express-backend:latest
-          docker push 602167898067.dkr.ecr.ap-south-1.amazonaws.com/express-backend:latest
+          docker build -t $ECR_REGISTRY/$BACKEND_REPOSITORY:$IMAGE_TAG ./backend
+          docker push $ECR_REGISTRY/$BACKEND_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$BACKEND_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+
+      # Get current backend task definition
+      - name: Download backend task definition
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition flask-backend-task \
+            --query taskDefinition \
+            > backend-task-definition.json
+
+      # Add new backend image to task definition
+      - name: Update backend task definition
+        id: backend-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: backend-task-definition.json
+          container-name: flask-backend
+          image: ${{ steps.build-backend.outputs.image }}
+
+      # Deploy backend service
+      - name: Deploy backend service
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.backend-task-def.outputs.task-definition }}
+          service: ${{ env.BACKEND_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
 
       # Build and push frontend Docker image
       - name: Build and push frontend image
+        id: build-frontend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t express-frontend ./frontend
-          docker tag express-frontend:latest 602167898067.dkr.ecr.ap-south-1.amazonaws.com/express-frontend:latest
-          docker push 602167898067.dkr.ecr.ap-south-1.amazonaws.com/express-frontend:latest
+          docker build -t $ECR_REGISTRY/$FRONTEND_REPOSITORY:$IMAGE_TAG ./frontend
+          docker push $ECR_REGISTRY/$FRONTEND_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$FRONTEND_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      # Deploy latest backend image
-      - name: Deploy backend service
+
+      # Get current frontend task definition
+      - name: Download frontend task definition
         run: |
-          aws ecs update-service \
-            --cluster flask-express-cluster \
-            --service flask-backend \
-            --force-new-deployment
+          aws ecs describe-task-definition \
+            --task-definition express-frontend-task \
+            --query taskDefinition \
+            > frontend-task-definition.json
 
-      # Deploy latest frontend image
+      # Add new frontend image to task definition
+      - name: Update frontend task definition
+        id: frontend-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: frontend-task-definition.json
+          container-name: express-frontend
+          image: ${{ steps.build-frontend.outputs.image }}
+
+      # Deploy frontend service
       - name: Deploy frontend service
-        run: |
-          aws ecs update-service \
-            --cluster flask-express-cluster \
-            --service express-frontend \
-            --force-new-deployment
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.frontend-task-def.outputs.task-definition }}
+          service: ${{ env.FRONTEND_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
