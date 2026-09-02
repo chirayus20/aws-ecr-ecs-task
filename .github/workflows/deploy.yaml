@@ -1,0 +1,60 @@
+name: Build and Deploy to ECS
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Get project code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Connect GitHub Actions to AWS using OIDC
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-south-1
+
+      # Login to Amazon ECR
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Build and push backend Docker image
+      - name: Build and push backend image
+        run: |
+          docker build -t express-backend ./backend
+          docker tag express-backend:latest 602167898067.dkr.ecr.ap-south-1.amazonaws.com/express-backend:latest
+          docker push 602167898067.dkr.ecr.ap-south-1.amazonaws.com/express-backend:latest
+
+      # Build and push frontend Docker image
+      - name: Build and push frontend image
+        run: |
+          docker build -t express-frontend ./frontend
+          docker tag express-frontend:latest 602167898067.dkr.ecr.ap-south-1.amazonaws.com/express-frontend:latest
+          docker push 602167898067.dkr.ecr.ap-south-1.amazonaws.com/express-frontend:latest
+
+      # Deploy latest backend image
+      - name: Deploy backend service
+        run: |
+          aws ecs update-service \
+            --cluster flask-express-cluster \
+            --service flask-backend \
+            --force-new-deployment
+
+      # Deploy latest frontend image
+      - name: Deploy frontend service
+        run: |
+          aws ecs update-service \
+            --cluster flask-express-cluster \
+            --service express-frontend \
+            --force-new-deployment
