@@ -5,11 +5,7 @@ on:
     branches: [main]
     paths:
       - "backend/**"
-<<<<<<< HEAD
-      - ".github/workflows/backend-deploy.yml"
-=======
       - ".github/workflows/backend-deploy.yaml"
->>>>>>> 529508c (fix spelling issues)
   workflow_dispatch:
 
 env:
