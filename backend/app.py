@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 from werkzeug.security import generate_password_hash
 import logging
+import re
 
 load_dotenv()
 
@@ -55,6 +56,12 @@ def process():
 
         if len(password) < 4:
             return jsonify({"success": False, "message": "Password too short"}), 400
+        
+        if re.search(r'\s', name):
+            return jsonify({"success": False, "message": "Name cannot contain spaces"}), 400
+
+        if re.search(r'\s', password):
+            return jsonify({"success": False, "message": "Password cannot contain spaces"}), 400
 
         # hash the password
         hashed = generate_password_hash(password)
