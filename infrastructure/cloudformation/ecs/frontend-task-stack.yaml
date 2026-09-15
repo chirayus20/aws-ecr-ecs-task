@@ -12,6 +12,12 @@ Parameters:
 
 Resources:
   # This role allows ECS task to pull image and send logs
+  FrontendLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /ecs/express-frontend-task
+      RetentionInDays: 7
+
   FrontendExecutionRole:
     Type: AWS::IAM::Role
     Properties:

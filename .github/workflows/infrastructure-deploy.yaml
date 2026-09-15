@@ -1,0 +1,80 @@
+name: Deploy Infrastructure with CloudFormation
+
+on:
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+
+jobs:
+  deploy-infrastructure:
+    name: Deploy AWS Infrastructure
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Validate CloudFormation templates
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://infrastructure/cloudformation/network/vpc.yaml
+
+          aws cloudformation validate-template \
+            --template-body file://infrastructure/cloudformation/ecr/ecr-repositories.yaml
+
+          aws cloudformation validate-template \
+            --template-body file://infrastructure/cloudformation/ecs/cluster.yaml
+
+          aws cloudformation validate-template \
+            --template-body file://infrastructure/cloudformation/ecs/backend-task-stack.yaml
+
+          aws cloudformation validate-template \
+            --template-body file://infrastructure/cloudformation/ecs/backend-service-stack.yaml
+
+          aws cloudformation validate-template \
+            --template-body file://infrastructure/cloudformation/ecs/frontend-task-stack.yaml
+
+          aws cloudformation validate-template \
+            --template-body file://infrastructure/cloudformation/ecs/frontend-service-stack.yaml
+
+      - name: Deploy VPC
+        run: |
+          aws cloudformation deploy \
+            --template-file infrastructure/cloudformation/network/vpc.yaml \
+            --stack-name flask-express-vpc \
+            --region $AWS_REGION
+
+      - name: Deploy ECR Repositories
+        run: |
+          aws cloudformation deploy \
+            --template-file infrastructure/cloudformation/ecr/ecr-repositories.yaml \
+            --stack-name flask-express-ecr \
+            --region $AWS_REGION
+
+      - name: Deploy ECS Cluster
+        run: |
+          aws cloudformation deploy \
+            --template-file infrastructure/cloudformation/ecs/cluster.yaml \
+            --stack-name flask-express-cluster \
+            --region $AWS_REGION
+
+      - name: Deploy Backend Task Definition
+        run: |
+          aws cloudformation deploy \
+            --template-file infrastructure/cloudformation/ecs/backend-task-stack.yaml \
+            --stack-name flask-express-backend-task \
+            --region $AWS_REGION \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameter-overrides \
+              DBSecretArn=${{ secrets.DB_SECRET_ARN }} \
+              DBCluster=${{ secrets.DB_CLUSTER }} \
+              ImageUri=602167898067.dkr.ecr.ap-south-1.amazonaws.com/flask-backend:15e51bdf738bb7fffe46b8e7d03411ab3371940a
