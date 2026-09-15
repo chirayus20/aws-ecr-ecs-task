@@ -64,7 +64,7 @@ jobs:
         run: |
           aws cloudformation deploy \
             --template-file infrastructure/cloudformation/ecs/backend-task-stack.yaml \
-            --stack-name flask-express-backend-task \
+            --stack-name backend-task-stack \
             --region $AWS_REGION \
             --capabilities CAPABILITY_NAMED_IAM \
             --parameter-overrides \
