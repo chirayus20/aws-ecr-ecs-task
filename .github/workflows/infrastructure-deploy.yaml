@@ -50,7 +50,7 @@ jobs:
         run: |
           aws cloudformation deploy \
             --template-file infrastructure/cloudformation/network/vpc.yaml \
-            --stack-name flask-express-vpc \
+            --stack-name flask-express-vpc-stack \
             --region $AWS_REGION
 
       - name: Deploy ECR Repositories
