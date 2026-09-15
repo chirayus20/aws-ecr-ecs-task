@@ -7,6 +7,8 @@ Resources:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: flask-express-cluster
+      ServiceConnectDefaults:
+        Namespace: production.local
 
 Outputs:
   ClusterName:

@@ -18,6 +18,9 @@ Resources:
             - !ImportValue flask-express-PublicSubnet2
           SecurityGroups:
             - !ImportValue flask-express-FrontendSG
+      ServiceConnectConfiguration:
+        Enabled: true
+        Namespace: production.local
 
 Outputs:
   FrontendServiceName:

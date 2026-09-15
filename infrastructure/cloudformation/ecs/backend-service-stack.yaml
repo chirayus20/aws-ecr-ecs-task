@@ -18,6 +18,15 @@ Resources:
             - !ImportValue flask-express-PublicSubnet2
           SecurityGroups:
             - !ImportValue flask-express-BackendSG
+      ServiceConnectConfiguration:
+        Enabled: true
+        Namespace: production.local
+        Services:
+          - PortName: backend-port
+            DiscoveryName: flask-backend
+            ClientAliases:
+              - Port: 9000
+                DnsName: flask-backend
 
 Outputs:
   BackendServiceName:

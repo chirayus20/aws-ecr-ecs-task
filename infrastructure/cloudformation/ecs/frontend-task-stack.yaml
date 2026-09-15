@@ -55,7 +55,7 @@ Resources:
             - Name: PORT
               Value: "8000"
             - Name: BACKEND_URL
-              Value: "http://13.233.28.232:9000"
+              Value: "http://flask-backend:9000"
           LogConfiguration:
             LogDriver: awslogs
             Options:

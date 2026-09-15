@@ -69,7 +69,9 @@ Resources:
           Essential: true
           PortMappings:
             - ContainerPort: 9000
+              HostPort: 9000
               Protocol: tcp
+              Name: backend-port
           Environment:
             - Name: PORT
               Value: "9000"
