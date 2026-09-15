@@ -53,13 +53,6 @@ jobs:
             --stack-name flask-express-vpc-stack \
             --region $AWS_REGION
 
-      - name: Deploy ECR Repositories
-        run: |
-          aws cloudformation deploy \
-            --template-file infrastructure/cloudformation/ecr/ecr-repositories.yaml \
-            --stack-name flask-express-ecr \
-            --region $AWS_REGION
-
       - name: Deploy ECS Cluster
         run: |
           aws cloudformation deploy \
