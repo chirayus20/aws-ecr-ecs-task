@@ -71,3 +71,27 @@ jobs:
               DBSecretArn=${{ secrets.DB_SECRET_ARN }} \
               DBCluster=${{ secrets.DB_CLUSTER }} \
               ImageUri=602167898067.dkr.ecr.ap-south-1.amazonaws.com/flask-backend:15e51bdf738bb7fffe46b8e7d03411ab3371940a
+
+      - name: Deploy Backend Service
+        run: |
+          aws cloudformation deploy \
+            --template-file infrastructure/cloudformation/ecs/backend-service-stack.yaml \
+            --stack-name backend-service-stack \
+            --region $AWS_REGION
+
+      - name: Deploy Frontend Task Definition
+        run: |
+          aws cloudformation deploy \
+            --template-file infrastructure/cloudformation/ecs/frontend-task-stack.yaml \
+            --stack-name frontend-task-stack \
+            --region $AWS_REGION \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
+            --parameter-overrides \
+              ImageUri=602167898067.dkr.ecr.ap-south-1.amazonaws.com/express-frontend:latest
+
+      - name: Deploy Frontend Service
+        run: |
+          aws cloudformation deploy \
+            --template-file infrastructure/cloudformation/ecs/frontend-service-stack.yaml \
+            --stack-name frontend-service-stack \
+            --region $AWS_REGION
