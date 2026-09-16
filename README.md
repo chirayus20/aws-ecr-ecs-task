@@ -6,7 +6,7 @@ This project contains a containerized Flask backend and an Express frontend appl
 
 ## Live Application Endpoints
 
-- Frontend Application → http://3.110.115.241:8000  
+- Frontend Application → http://13.201.184.70:8000  
 - Backend API → http://13.201.74.220:9000/  
 - Backend Health Check → /health
 
